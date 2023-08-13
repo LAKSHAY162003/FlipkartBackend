@@ -6,7 +6,8 @@ const businessSchema=new mongoose.Schema({
         businessWalletAddress:String,
         name:String,
         email:String,
-        pwd:String
+        pwd:String,
+        tokenContractAddress:String
 });
 
 

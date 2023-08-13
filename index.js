@@ -82,8 +82,12 @@ app.post('/registerBusiness',async (req, res) => {
     const { signedTransaction } = req.body;
     const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
-    const tx = await provider.sendTransaction(signedTransaction);
-    await tx.wait();
+    const transaction = await provider.getTransaction(signedTransaction);
+    if (transaction) {
+        console.log('Transaction details:', transaction);
+    } else {
+        res.json({message:'Transaction not found.'});
+    }
     
     // here add in the transactions table !!
     const newTransaction = new Transaction({
@@ -113,7 +117,8 @@ app.post('/registerBusiness',async (req, res) => {
             businessWalletAddress:req.body.businessWalletAddress,
             name:req.body.name,
             email:req.body.email,
-            pwd:hash
+            pwd:hash,
+            tokenContractAddress:req.body.tokenContractAddress
           });
 
           await newBusiness.save()
