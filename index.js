@@ -154,11 +154,19 @@ app.post('/registerBusiness',async (req, res) => {
 app.post('/joinBusiness',customerAuth,async (req, res) => {
   try {
     const { signedTransaction, businessId } = req.body;
-    const user =req.user; // associated using : jwt !! 
-    const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+    const userId=req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+       return res.status(404).json({ error: 'User not found' });
+    } 
+    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
-    const tx = await provider.sendTransaction(signedTransaction);
-    await tx.wait();
+    const transaction = await provider.getTransaction(signedTransaction);
+    if (transaction) {
+        console.log('Transaction details:', transaction);
+    } else {
+        res.json({message:'Transaction not found.'});
+    }
 
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
@@ -201,12 +209,16 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
 app.post('/registerCustomer', async (req, res) => {
   try {
     const { signedTransaction } = req.body;
-    const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
-    const tx = await provider.sendTransaction(signedTransaction);
-    await tx.wait();
-
+    const transaction = await provider.getTransaction(signedTransaction);
+    if (transaction) {
+        console.log('Transaction details:', transaction);
+    } else {
+        res.json({message:'Transaction not found.'});
+    }
     // here add in the transactions table and User Table !!
+
     const newTransaction = new Transaction({
       txHash: signedTransaction,
     });
@@ -273,11 +285,18 @@ app.post('/registerCustomer', async (req, res) => {
 app.post("/getReward",customerAuth,async(req,res)=>{
   try {
     const { signedTransaction, businessId , amount } = req.body;
-    const user =req.user; // associated using : jwt !! 
-    const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
-    
-    const tx = await provider.sendTransaction(signedTransaction);
-    await tx.wait();
+    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    const userId=req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+       return res.status(404).json({ error: 'User not found' });
+    }     
+    const transaction = await provider.getTransaction(signedTransaction);
+    if (transaction) {
+        console.log('Transaction details:', transaction);
+    } else {
+        res.json({message:'Transaction not found.'});
+    }
 
     // Save the transaction details in your transactions table
     const newTransaction = new Transaction({
@@ -380,7 +399,46 @@ app.get('/get-transaction-recipt/customer/:transactionHash',customerAuth, async 
 });
 
 
-app.get('/getListOfBusiness',(req,res)=>{
+app.get('/getListOfBusiness',async(req,res)=>{
+
+  try{
+    const businesses = await Business.find().select('_id businessWalletAddress name tokenContractAddress');
+    res.json(businesses);
+  }
+  catch(error){
+    console.log(error);
+    res.json({message:error.message});
+  }
+
+
+});
+
+app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
+  
+  try{
+    const userId=req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    } 
+    else{
+      
+      const transactionIds=user.transactions;
+      // Find transactions by their IDs
+      const transactions = await Transaction.find({ _id: { $in: transactionIds } });
+        
+      if (!transactions || transactions.length === 0) {
+          return res.status(404).json({ error: 'No transactions found' });
+      }
+      
+      res.json(transactions);
+
+    }
+  }
+  catch(error){
+    console.log(error);
+    res.json({message:error.message});
+  }
 
 });
 
