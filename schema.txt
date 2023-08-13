@@ -1,0 +1,24 @@
+{
+    userWalletAddress:String,
+    name:String,
+    email:String,
+    Transactions:{obj}
+    LoyaltyPoints:[obj]
+
+}
+
+// 0 2 3 4 5 6 
+
+LoyaltyPoints:{
+
+    businessDetails: {
+
+    }
+    count:Integer
+
+}
+Transaction Schema : 
+{
+    txHash 
+}
+
