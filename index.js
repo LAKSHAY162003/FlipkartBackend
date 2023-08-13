@@ -80,7 +80,7 @@ app.post('/registerBusiness',async (req, res) => {
   
   try {
     const { signedTransaction } = req.body;
-    const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
     const tx = await provider.sendTransaction(signedTransaction);
     await tx.wait();
@@ -137,7 +137,7 @@ app.post('/registerBusiness',async (req, res) => {
 
   } catch (error) {
     console.error('Error registering business:', error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ error: 'An error occurred My Friend' });
   }
 
 });
