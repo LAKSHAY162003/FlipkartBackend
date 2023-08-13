@@ -375,9 +375,13 @@ app.post("/loginCustomer",async (req,res)=>{
 
 
 // Rectify them !!
-app.get('/get-transaction-recipt/business/:transactionHash',businessAuth, async (req, res) => {
+app.get('/get-transaction-recipt/customer/:transactionHash'
+,customerAuth, async (req, res) => {
     try {
+
       const { transactionHash } = req.params;
+      const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    
       const receipt = await provider.getTransactionReceipt(transactionHash);
       res.json(receipt);
     } catch (error) {
@@ -387,16 +391,21 @@ app.get('/get-transaction-recipt/business/:transactionHash',businessAuth, async 
 });
 
 
-app.get('/get-transaction-recipt/customer/:transactionHash',customerAuth, async (req, res) => {
-  try {
-    const { transactionHash } = req.params;
-    const receipt = await provider.getTransactionReceipt(transactionHash);
-    res.json(receipt);
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'An error occurred' });
-  }
+app.get('/get-transaction-recipt/business/:transactionHash'
+,businessAuth, async (req, res) => {
+    try {
+
+      const { transactionHash } = req.params;
+      const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    
+      const receipt = await provider.getTransactionReceipt(transactionHash);
+      res.json(receipt);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'An error occurred' });
+    }
 });
+
 
 
 app.get('/getListOfBusiness',async(req,res)=>{
@@ -413,6 +422,7 @@ app.get('/getListOfBusiness',async(req,res)=>{
 
 });
 
+// get the transaction hashes !! for a customer !!
 app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
   
   try{
@@ -441,7 +451,6 @@ app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
   }
 
 });
-
   
   
 app.set("port", process.env.port || 3000)
