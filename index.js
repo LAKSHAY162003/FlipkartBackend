@@ -80,7 +80,7 @@ app.post('/registerBusiness',async (req, res) => {
   
   try {
     const { signedTransaction } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
           if (receipt.status === 1) {
@@ -89,7 +89,7 @@ app.post('/registerBusiness',async (req, res) => {
               res.status(500).json({message:'Transaction failed.'});
           }
       }).catch(error => {
-          res.json({'Error:':error});
+          console.log(error);
       });
     
     // here add in the transactions table !!
@@ -113,7 +113,7 @@ app.post('/registerBusiness',async (req, res) => {
       let saltRounds=10;
       bcrypt.hash(req.body.pwd, saltRounds, async function (err, hash) {
         if (err) {
-          return res.status(500).json({ message: err.message })
+          res.status(500).json({ message: err.message })
         } else {
           // addBusiness in the business Table !!
           const newBusiness = new Business({
@@ -133,7 +133,7 @@ app.post('/registerBusiness',async (req, res) => {
               role: "Business"
             }
             const accessToken = jwt.sign(user, process.env.SECRET_KEY)
-            return res.status(200).json({ ...user, accessToken });
+            res.status(200).json({ ...user, accessToken });
 
           })
           .catch(error => {
@@ -160,18 +160,18 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
     const userId=req.user._id;
     const user = await User.findById(userId);
     if (!user) {
-       return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
     } 
-    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
       if (receipt.status === 1) {
           console.log('Transaction was successful.');
       } else {
-          res.status(500).json({message:'Transaction failed.'});
+          console.log({message:'Transaction failed.'});
       }
   }).catch(error => {
-      res.json({'Error:':error});
+      console.log({'Error:':error});
   });
 
     // here add in the transactions table !! and 
@@ -182,7 +182,7 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
      const business = await Business.findById(businessId);
  
      if (!business) {
-       return res.status(404).json({ error: 'Business not found' });
+        console.log({ error: 'Business not found' });
      }
  
      // Update the user's loyalty points with business details
@@ -195,12 +195,12 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
  
      // Save the transaction details in your transactions table
      const newTransaction = new Transaction({
-       txHash: tx.hash,
+       txHash:signedTransaction,
      });
  
      await newTransaction.save();
      
-    res.json({ message: 'Joined business successfully!' });
+    res.json({ message: "Done Success"});
 
   } catch (error) {
     console.error('Error joining business:', error);
@@ -215,16 +215,16 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
 app.post('/registerCustomer', async (req, res) => {
   try {
     const { signedTransaction } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
       if (receipt.status === 1) {
           console.log('Transaction was successful.');
       } else {
-          res.status(500).json({message:'Transaction failed.'});
+          console.log('Transaction failed.');
       }
   }).catch(error => {
-      res.json({'Error:':error});
+      console.log(error);
   });
     // here add in the transactions table and User Table !!
 
@@ -239,7 +239,7 @@ app.post('/registerCustomer', async (req, res) => {
         let saltRounds=10;
       bcrypt.hash(req.body.pwd, saltRounds, async function (err, hash) {
         if (err) {
-          return res.status(500).json({ message: err.message })
+          console.log(err);
         } else {
           // addUser in the customer Table !!
           const newUser = new User({
@@ -260,7 +260,7 @@ app.post('/registerCustomer', async (req, res) => {
               role: "Customer"
             }
             const accessToken = jwt.sign(user, process.env.SECRET_KEY)
-            return res.status(200).json({ ...user, accessToken });
+            res.status(200).json({ ...user, accessToken });
 
           }).catch(error => {
             console.error('Error saving user:', error);
@@ -294,11 +294,11 @@ app.post('/registerCustomer', async (req, res) => {
 app.post("/getReward",customerAuth,async(req,res)=>{
   try {
     const { signedTransaction, businessId , amount } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
     const userId=req.user._id;
     const user = await User.findById(userId);
     if (!user) {
-       return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
     }     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
       if (receipt.status === 1) {
@@ -307,12 +307,12 @@ app.post("/getReward",customerAuth,async(req,res)=>{
           res.status(500).json({message:'Transaction failed.'});
       }
   }).catch(error => {
-      res.json({'Error:':error});
+      console.log({'Error:':error});
   });
 
     // Save the transaction details in your transactions table
     const newTransaction = new Transaction({
-      txHash: tx.hash,
+      txHash: signedTransaction,
     });
 
     await newTransaction.save();
@@ -325,7 +325,7 @@ app.post("/getReward",customerAuth,async(req,res)=>{
      const business = await Business.findById(businessId);
  
      if (!business) {
-       return res.status(404).json({ error: 'Business not found' });
+       console.log({ error: 'Business not found' });
      }
  
      // Update the user's loyalty points with business details
@@ -360,7 +360,7 @@ app.post("/loginCustomer",async (req,res)=>{
     const results = await User.find({userWalletAddress:userWalletAddress})
 
     if (results.length === 0) {
-      return res.status(500).json({ message: "NO ENTRY FOUND !!!" })
+       console.log({ message: "NO ENTRY FOUND !!!" })
     }
 
     let userFound = false;
@@ -376,24 +376,24 @@ app.post("/loginCustomer",async (req,res)=>{
         }
         const accessToken = jwt.sign(user, process.env.SECRET_KEY)
         console.log("Entry Found");
-        return res.status(200).json({ accessToken, ...user })
+        res.status(200).json({ accessToken, ...user })
       }
     }
 
     res.status(500).json({ message: "INVALID CREDENTIALS !!!" })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.log(err);
   }
 });
 
 
 // Rectify them !!
-app.get('/get-transaction-recipt/customer/:transactionHash'
+app.post('/get-transaction-recipt/customer/:transactionHash'
 ,customerAuth, async (req, res) => {
     try {
 
       const { transactionHash } = req.params;
-      const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+      const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
     
       const receipt = await provider.getTransactionReceipt(transactionHash);
       res.json(receipt);
@@ -409,7 +409,7 @@ app.get('/get-transaction-recipt/business/:transactionHash'
     try {
 
       const { transactionHash } = req.params;
-      const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+      const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
     
       const receipt = await provider.getTransactionReceipt(transactionHash);
       res.json(receipt);
@@ -442,7 +442,7 @@ app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
     const userId=req.user._id;
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
     } 
     else{
       
@@ -451,7 +451,7 @@ app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
       const transactions = await Transaction.find({ _id: { $in: transactionIds } });
         
       if (!transactions || transactions.length === 0) {
-          return res.status(404).json({ error: 'No transactions found' });
+          res.status(404).json({ error: 'No transactions found' });
       }
       
       res.json(transactions);
