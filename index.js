@@ -82,12 +82,15 @@ app.post('/registerBusiness',async (req, res) => {
     const { signedTransaction } = req.body;
     const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
-    const transaction = await provider.getTransaction(signedTransaction);
-    if (transaction) {
-        console.log('Transaction details:', transaction);
-    } else {
-        res.json({message:'Transaction not found.'});
-    }
+    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+          if (receipt.status === 1) {
+              console.log('Transaction was successful.');
+          } else {
+              res.status(500).json({message:'Transaction failed.'});
+          }
+      }).catch(error => {
+          res.json({'Error:':error});
+      });
     
     // here add in the transactions table !!
     const newTransaction = new Transaction({
@@ -161,12 +164,15 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
     } 
     const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
-    const transaction = await provider.getTransaction(signedTransaction);
-    if (transaction) {
-        console.log('Transaction details:', transaction);
-    } else {
-        res.json({message:'Transaction not found.'});
-    }
+    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+      if (receipt.status === 1) {
+          console.log('Transaction was successful.');
+      } else {
+          res.status(500).json({message:'Transaction failed.'});
+      }
+  }).catch(error => {
+      res.json({'Error:':error});
+  });
 
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
@@ -211,12 +217,15 @@ app.post('/registerCustomer', async (req, res) => {
     const { signedTransaction } = req.body;
     const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
-    const transaction = await provider.getTransaction(signedTransaction);
-    if (transaction) {
-        console.log('Transaction details:', transaction);
-    } else {
-        res.json({message:'Transaction not found.'});
-    }
+    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+      if (receipt.status === 1) {
+          console.log('Transaction was successful.');
+      } else {
+          res.status(500).json({message:'Transaction failed.'});
+      }
+  }).catch(error => {
+      res.json({'Error:':error});
+  });
     // here add in the transactions table and User Table !!
 
     const newTransaction = new Transaction({
@@ -291,12 +300,15 @@ app.post("/getReward",customerAuth,async(req,res)=>{
     if (!user) {
        return res.status(404).json({ error: 'User not found' });
     }     
-    const transaction = await provider.getTransaction(signedTransaction);
-    if (transaction) {
-        console.log('Transaction details:', transaction);
-    } else {
-        res.json({message:'Transaction not found.'});
-    }
+    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+      if (receipt.status === 1) {
+          console.log('Transaction was successful.');
+      } else {
+          res.status(500).json({message:'Transaction failed.'});
+      }
+  }).catch(error => {
+      res.json({'Error:':error});
+  });
 
     // Save the transaction details in your transactions table
     const newTransaction = new Transaction({
@@ -363,6 +375,7 @@ app.post("/loginCustomer",async (req,res)=>{
           role: "Customer"
         }
         const accessToken = jwt.sign(user, process.env.SECRET_KEY)
+        console.log("Entry Found");
         return res.status(200).json({ accessToken, ...user })
       }
     }
