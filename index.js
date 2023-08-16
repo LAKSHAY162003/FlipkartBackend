@@ -80,7 +80,7 @@ app.post('/registerBusiness',async (req, res) => {
   
   try {
     const { signedTransaction } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
+    const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
           if (receipt.status === 1) {
@@ -162,7 +162,7 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
     if (!user) {
       res.status(404).json({ error: 'User not found' });
     } 
-    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
+    const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
       if (receipt.status === 1) {
@@ -215,7 +215,7 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
 app.post('/registerCustomer', async (req, res) => {
   try {
     const { signedTransaction } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
+    const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     
     provider.getTransactionReceipt(signedTransaction).then(receipt => {
       if (receipt.status === 1) {
@@ -294,7 +294,7 @@ app.post('/registerCustomer', async (req, res) => {
 app.post("/getReward",customerAuth,async(req,res)=>{
   try {
     const { signedTransaction, businessId , amount } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
+    const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     const userId=req.user._id;
     const user = await User.findById(userId);
     if (!user) {
@@ -350,7 +350,73 @@ app.post("/getReward",customerAuth,async(req,res)=>{
     console.error('Error joining business:', error);
     res.status(500).json({ error: 'An error occurred' });
   }
-});
+}); 
+// see for business also we can maintain the balance but do we need to ? no !! 
+// so simple : on frontend that function is already being created !! 
+
+
+// so on spend we need to decrease !!
+app.post("/spend",customerAuth,async(req,res)=>{
+  try {
+    const { signedTransaction, businessId , amount } = req.body;
+    const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
+    const userId=req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+    }     
+    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+      if (receipt.status === 1) {
+          console.log('Transaction was successful.');
+      } else {
+          res.status(500).json({message:'Transaction failed.'});
+      }
+  }).catch(error => {
+      console.log({'Error:':error});
+  });
+
+    // Save the transaction details in your transactions table
+    const newTransaction = new Transaction({
+      txHash: signedTransaction,
+    });
+
+    await newTransaction.save();
+
+    // here add in the transactions table !! and 
+    // User me jaake : uske : Loyalty Points me 
+    // is Buisness ko daal do !! and totalCount ko 0 set kardo !! 
+ 
+     // Find the business by its ID
+     const business = await Business.findById(businessId);
+ 
+     if (!business) {
+       console.log({ error: 'Business not found' });
+     }
+ 
+     // Update the user's loyalty points with business details
+        const loyaltyPointsIndex = user.loyaltyPoints.findIndex(
+          (loyaltyPoint) => loyaltyPoint.business.toString() === businessId
+        );
+        
+        if (loyaltyPointsIndex !== -1) {
+          // If the business is already associated with the user, increment the totalCount
+          user.loyaltyPoints[loyaltyPointsIndex].totalCount -= amount;
+        } else {
+          // If the business is not associated with the user, add a new entry
+          // Enroll 1st !! 
+          res.json({message:"First Enroll Into the program !!"});
+        }
+
+        await user.save();
+     
+      res.json({ message: 'Deducted Amount successfully!' });
+
+  } catch (error) {
+    console.error('Error joining business:', error);
+    res.status(500).json({ error: 'An error occurred' });
+  }
+}); 
+
 
 
 // this will be returing jwt to the user !! 
@@ -388,12 +454,12 @@ app.post("/loginCustomer",async (req,res)=>{
 
 
 // Rectify them !!
-app.post('/get-transaction-recipt/customer/:transactionHash'
+app.get('/get-transaction-recipt/customer/:transactionHash'
 ,customerAuth, async (req, res) => {
     try {
 
       const { transactionHash } = req.params;
-      const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
+      const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     
       const receipt = await provider.getTransactionReceipt(transactionHash);
       res.json(receipt);
@@ -409,7 +475,7 @@ app.get('/get-transaction-recipt/business/:transactionHash'
     try {
 
       const { transactionHash } = req.params;
-      const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/74105b43c4b34cd2b38fd99a1f315748');
+      const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     
       const receipt = await provider.getTransactionReceipt(transactionHash);
       res.json(receipt);
