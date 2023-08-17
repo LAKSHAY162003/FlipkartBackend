@@ -506,7 +506,7 @@ app.post("/getUserDetails",customerAuth,async(req,res)=>{
 });
 
 
-app.post("/getUserDetails",businessAuth,async(req,res)=>{
+app.post("/getBusinessDetails",businessAuth,async(req,res)=>{
   try{
     const businessId=req.user._id;
     const business = await Business.findById(businessId);
