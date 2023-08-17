@@ -419,6 +419,7 @@ app.post("/spend",customerAuth,async(req,res)=>{
 
 
 
+
 // this will be returing jwt to the user !! 
 app.post("/loginCustomer",async (req,res)=>{
   const { userWalletAddress , pwd } = req.body; // imp !! userWalletAddress , pwd to be used !! 
@@ -449,6 +450,74 @@ app.post("/loginCustomer",async (req,res)=>{
     res.status(500).json({ message: "INVALID CREDENTIALS !!!" })
   } catch (err) {
     console.log(err);
+  }
+});
+
+// this will be returing jwt to the user !! 
+app.post("/loginBusiness",async (req,res)=>{
+  const { businessWalletAddress , pwd } = req.body; // imp !! userWalletAddress , pwd to be used !! 
+  try {
+    const results = await Business.find({businessWalletAddress:businessWalletAddress})
+
+    if (results.length === 0) {
+       console.log({ message: "NO ENTRY FOUND !!!" })
+    }
+
+
+    for (const result of results) {
+      const storedHashedPassword = result.pwd;
+      const passwordMatch = bcrypt.compare(pwd, storedHashedPassword);
+
+      if (passwordMatch) {
+        const user = {
+          _id: result._id,
+          role: "Business"
+        }
+        const accessToken = jwt.sign(user, process.env.SECRET_KEY)
+        console.log("Entry Found");
+        res.status(200).json({ accessToken, ...user })
+      }
+    }
+
+    res.status(500).json({ message: "INVALID CREDENTIALS !!!" })
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+
+app.post("/getUserDetails",customerAuth,async(req,res)=>{
+
+  try{
+    const userId=req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+    }   
+    return user;
+  }
+  catch(error){
+    console.log(error);
+    res.status(400).json({error:"In Catch error"});
+  }
+
+
+
+});
+
+
+app.post("/getUserDetails",businessAuth,async(req,res)=>{
+  try{
+    const businessId=req.user._id;
+    const business = await Business.findById(businessId);
+    if (!business) {
+      res.status(404).json({ error: 'User not found' });
+    }   
+    return business;
+  }
+  catch(error){
+    console.log(error);
+    res.status(400).json({error:"In Catch error"});
   }
 });
 
