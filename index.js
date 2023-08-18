@@ -582,15 +582,26 @@ app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
     } 
     else{
       
-      const transactionIds=user.transactions;
+      const transactionIds = user.transactions;
+
       // Find transactions by their IDs
       const transactions = await Transaction.find({ _id: { $in: transactionIds } });
-        
+      
       if (!transactions || transactions.length === 0) {
-          res.status(404).json({ error: 'No transactions found' });
+          return res.status(404).json({ error: 'No transactions found' });
       }
       
-      res.json(transactions);
+      const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
+      const responseArray = [];
+      
+      // Loop through each transaction and fetch its receipt
+      for (const transaction of transactions) {
+          const receipt = await provider.getTransactionReceipt(transaction.transactionHash);
+          responseArray.push(receipt);
+      }
+      
+      // Send the response array containing transaction receipt objects
+      res.json(responseArray);      
 
     }
   }
