@@ -7,7 +7,8 @@ const businessSchema=new mongoose.Schema({
         name:String,
         email:String,
         pwd:String,
-        tokenContractAddress:String
+        tokenContractAddress:String,
+        tokenSymbol:String
 });
 
 

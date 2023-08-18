@@ -121,7 +121,8 @@ app.post('/registerBusiness',async (req, res) => {
             name:req.body.name,
             email:req.body.email,
             pwd:hash,
-            tokenContractAddress:req.body.tokenContractAddress
+            tokenContractAddress:req.body.tokenContractAddress,
+            tokenSymbol:req.body.tokenSymbol
           });
 
           await newBusiness.save()
@@ -559,7 +560,7 @@ app.get('/get-transaction-recipt/business/:transactionHash'
 app.get('/getListOfBusiness',async(req,res)=>{
 
   try{
-    const businesses = await Business.find().select('_id businessWalletAddress name tokenContractAddress');
+    const businesses = await Business.find().select('_id tokenSymbol businessWalletAddress name tokenContractAddress');
     res.json(businesses);
   }
   catch(error){
