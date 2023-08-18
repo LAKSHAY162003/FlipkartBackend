@@ -594,14 +594,17 @@ app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
       const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
       const responseArray = [];
       
+      console.log(transactions);
       // Loop through each transaction and fetch its receipt
-      for (const transaction of transactions) {
-          const receipt = await provider.getTransactionReceipt(transaction.transactionHash);
+      for(let i=0;i<transactions.length;i++) {
+          const receipt = await provider.getTransactionReceipt(transactions[i].txHash);
           responseArray.push(receipt);
       }
+
+      console.log(responseArray);
       
       // Send the response array containing transaction receipt objects
-      res.json(responseArray);      
+      res.send(responseArray);      
 
     }
   }
