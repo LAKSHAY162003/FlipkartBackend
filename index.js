@@ -391,7 +391,11 @@ app.post("/spend",customerAuth,async(req,res)=>{
       txHash: signedTransaction,
     });
 
-    await newTransaction.save();
+    let savedId="";
+    await newTransaction.save(function(err,trans) {
+      console.log(trans._id);
+      savedId=trans._id;
+   });
 
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
@@ -417,7 +421,8 @@ app.post("/spend",customerAuth,async(req,res)=>{
           // Enroll 1st !! 
           res.json({message:"First Enroll Into the program !!"});
         }
-
+        
+        user.transactions.push(savedId);
         await user.save();
      
       res.json({ message: 'Deducted Amount successfully!' });
