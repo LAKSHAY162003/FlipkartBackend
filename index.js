@@ -495,7 +495,8 @@ app.post("/getUserDetails",customerAuth,async(req,res)=>{
     if (!user) {
       res.status(404).json({ error: 'User not found' });
     }   
-    return user;
+    console.log(user);
+    res.status(200).json(user);
   }
   catch(error){
     console.log(error);
@@ -514,12 +515,42 @@ app.post("/getBusinessDetails",businessAuth,async(req,res)=>{
     if (!business) {
       res.status(404).json({ error: 'User not found' });
     }   
-    return business;
+    res.json(business);
   }
   catch(error){
     console.log(error);
     res.status(400).json({error:"In Catch error"});
   }
+});
+
+app.post("/getBusinessDetails/byUser",customerAuth,async(req,res)=>{
+  
+try{
+  console.log("Hello");
+  const businesses=req.body.businessess;
+  console.log(businesses);
+  let arr=[];
+
+  for(let i=0;i<businesses.length;i++){
+    let id=businesses[i].business;
+    const business = await Business.findById(id);
+      if (!business) {
+        res.status(404).json({ error: 'Business not found' });
+      }   
+      const newObject={
+        businessDetails:business,
+        totalCount:businesses[i].totalCount
+      }
+      arr.push(newObject);
+  }
+
+  res.status(200).send(arr);
+  
+}
+catch(error){
+  console.log(error);
+  res.status(400).json({error:"In Catch error"});
+}
 });
 
 
