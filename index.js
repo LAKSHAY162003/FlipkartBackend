@@ -178,6 +178,17 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
       console.log({'Error:':error});
   });
 
+
+    
+     // Save the transaction details in your transactions table
+     const newTransaction = new Transaction({
+      txHash:signedTransaction,
+    });
+    
+      const savedDocument=await newTransaction.save();
+      let savedId=savedDocument._id;
+   
+
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
     // is Buisness ko daal do !! and totalCount ko 0 set kardo !! 
@@ -194,17 +205,10 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
        business: businessId,
        totalCount: 0,
      });
- 
+
+     user.transactions.push(savedId);
      await user.save();
- 
-     // Save the transaction details in your transactions table
-     const newTransaction = new Transaction({
-       txHash:signedTransaction,
-     });
- 
-     await newTransaction.save();
-     
-    res.json({ message: "Done Success"});
+      res.json({ message: "Done Success"});
 
   } catch (error) {
     console.error('Error joining business:', error);
@@ -321,11 +325,9 @@ app.post("/getReward",customerAuth,async(req,res)=>{
       txHash: signedTransaction,
     });
 
-    let savedId="";
-    await newTransaction.save(function(err,trans) {
-      console.log(trans._id);
-      savedId=trans._id;
-   });
+    const savedDocument=await newTransaction.save();
+   
+   let savedId=savedDocument._id;
 
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
@@ -391,11 +393,10 @@ app.post("/spend",customerAuth,async(req,res)=>{
       txHash: signedTransaction,
     });
 
-    let savedId="";
-    await newTransaction.save(function(err,trans) {
-      console.log(trans._id);
-      savedId=trans._id;
-   });
+    
+    const savedDocument=await newTransaction.save();
+   
+   let savedId=savedDocument._id;
 
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
