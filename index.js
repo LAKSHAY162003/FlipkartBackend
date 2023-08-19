@@ -165,9 +165,12 @@ app.post('/joinBusiness',customerAuth,async (req, res) => {
     } 
     const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_API_KEY);
     
-    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+    provider.getTransactionReceipt(signedTransaction).then(async(receipt) => {
       if (receipt.status === 1) {
           console.log('Transaction was successful.');
+
+
+
       } else {
           console.log({message:'Transaction failed.'});
       }
@@ -301,14 +304,16 @@ app.post("/getReward",customerAuth,async(req,res)=>{
     if (!user) {
       res.status(404).json({ error: 'User not found' });
     }     
-    provider.getTransactionReceipt(signedTransaction).then(receipt => {
+    provider.getTransactionReceipt(signedTransaction).then(async(receipt) => {
       if (receipt.status === 1) {
           console.log('Transaction was successful.');
+        // add to user table !! 
       } else {
           res.status(500).json({message:'Transaction failed.'});
       }
   }).catch(error => {
       console.log({'Error:':error});
+      res.json("Error Saving");
   });
 
     // Save the transaction details in your transactions table
@@ -316,7 +321,11 @@ app.post("/getReward",customerAuth,async(req,res)=>{
       txHash: signedTransaction,
     });
 
-    await newTransaction.save();
+    let savedId="";
+    await newTransaction.save(function(err,trans) {
+      console.log(trans._id);
+      savedId=trans._id;
+   });
 
     // here add in the transactions table !! and 
     // User me jaake : uske : Loyalty Points me 
@@ -342,7 +351,8 @@ app.post("/getReward",customerAuth,async(req,res)=>{
           // Enroll 1st !! 
           res.json({message:"First Enroll Into the program !!"});
         }
-
+        
+        user.transactions.push(savedId);
         await user.save();
      
       res.json({ message: 'Joined business successfully!' });
@@ -418,6 +428,27 @@ app.post("/spend",customerAuth,async(req,res)=>{
   }
 }); 
 
+
+app.post('/api/data/:id',customerAuth,async (req, res) => {
+  try {
+    const id = req.user._id;
+    console.log(id);
+    const document = await User.findById(id);
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    console.log(document);
+    const timestamp = document.timestamp.getTime();
+    const value = document.valueField;
+
+    res.json({ timestamp, value });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 
@@ -603,7 +634,7 @@ app.get('/getListOfBusiness',async(req,res)=>{
 });
 
 // get the transaction hashes !! for a customer !!
-app.get('/getTransactionHistroy',customerAuth,async(req,res)=>{
+app.post('/getTransactionHistroy',customerAuth,async(req,res)=>{
   
   try{
     const userId=req.user._id;
